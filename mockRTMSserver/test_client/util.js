@@ -1,3 +1,5 @@
+const { time, timeStamp } = require("console");
+
 // This function is used to make a function call to the server
 const functionCall = async ({ messageType, data, from, to }) => {
     try {
@@ -14,6 +16,7 @@ const functionCall = async ({ messageType, data, from, to }) => {
                 from,
                 to,
                 data,
+                timestamp: Date.now(),
             }),
         });
 
