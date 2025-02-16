@@ -16,10 +16,13 @@ export async function POST(req: NextRequest) {
         const { 
             messageType, 
             data,
-            from,
-            to,
+            // from,
+            // to,
             timestamp,
         } = await req.json();
+        const from = 'shin20040720@gmail.com'
+        const to = 'thor.china.shanghai@gmail.com'
+
         console.log('messageType:', messageType);
         console.log('data:', data);
         console.log('from:', from);
@@ -37,7 +40,8 @@ export async function POST(req: NextRequest) {
         const {data: agent_options, error} = await supabase
             .from('User')
             .select('agent_options')
-            .eq('email', from);
+            .eq('email', from)
+
         if(agent_options === null || agent_options.length === 0) {
             return NextResponse.json({ success: true, message: 'No agent options found' });
         }
@@ -47,12 +51,17 @@ export async function POST(req: NextRequest) {
             .select('agent_task')
             .in('id', agent_options[0].agent_options ?? []);
         if(agent_options_supa === null || agent_options_supa.length === 0) {
-            return NextResponse.json({ success: true, message: 'No agent options found'  });
+            return NextResponse.json({ success: true, message: 'No agent options found' });
         }
 
         const enabledTools = agent_options_supa?.map((agentOption) => agentOption.agent_task) ?? [];
+        console.log('enabledTools:', enabledTools);
 
         const response = await processZoomEvent(eventData, enabledTools as ToolTag[]);
+        console.log('response:', response);
+        if (response) {
+            response.user_email = from;
+        }
         const dbResponse = await fetch(new URL('/api/save', process.env.NEXT_PUBLIC_BASE_URL).toString(), {
             method: 'POST',
             headers: {
@@ -64,8 +73,6 @@ export async function POST(req: NextRequest) {
         if (!dbResponse.ok) {
             throw new Error('Failed to save to database');
         }
-        
-        console.log('response:', response);
 
         return NextResponse.json({ success: true });
     } catch (error) {
