@@ -2,7 +2,8 @@ import { motion } from 'framer-motion'
 import React from 'react'
 import type { Task } from '../app/home/page'
 import { createEvent } from 'ics'
-import { Calendar, Twitter } from 'lucide-react'
+import { Calendar, Search, Twitter } from 'lucide-react'
+import { SourcesList } from './sourcesList'
 
 export default function Task({
     id,
@@ -55,6 +56,8 @@ export default function Task({
             return "bg-sky-900 text-sky-200 border border-sky-700"
         case "timeline":
             return "bg-orange-900 text-orange-200 border border-orange-700"
+        case "research":
+            return "bg-indigo-900 text-indigo-200 border border-indigo-700"
         default:
             return "bg-gray-800 text-gray-200 border border-gray-700"
         }
@@ -115,6 +118,23 @@ export default function Task({
                     >
                         <p className="text-xs text-gray-400">Open Lumora Quiz</p>
                     </div>
+                )
+            }
+            {
+                tag === "research" && misc.researchResults && (
+                    <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-4 border-t border-gray-700 pt-4"
+                    >
+                    <div className="flex items-center mb-2">
+                        <Search className="w-5 h-5 mr-2 text-indigo-400" />
+                        <h4 className="text-lg font-medium text-gray-300">Research Results</h4>
+                    </div>
+                    <p className="text-sm text-gray-400 mb-4">{misc.researchResults.summary}</p>
+                    <SourcesList sources={misc.researchResults.sources} />
+                    </motion.div>
                 )
             }
         </motion.div>
