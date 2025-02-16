@@ -74,7 +74,7 @@ export default function HomePage() {
                 className="inline-flex items-center text-purple-400 hover:text-purple-300 transition-colors duration-300"
                 >
                 <ShoppingBag className="w-5 h-5 mr-2" />
-                <span className="font-medium">Marketplace</span>
+                <span className="font-medium">Lumora Library</span>
                 </Link>
             </div>
             <div className="mb-4 text-center">
@@ -91,14 +91,14 @@ export default function HomePage() {
             <div className="grid grid-cols-3 py-8 mx-96 gap-12">
                 <div className="col-span-2">
                     <h2 className="text-3xl font-medium mb-2 text-gray-300">Completed Tasks</h2>
-                    {completedTasks.length && completedTasks.map((task) => (
+                    {completedTasks.length > 0 ? completedTasks.map((task) => (
                         <Task key={task.id} id={task.id} title={task.title} desc={task.desc} tag={task.tag} misc={task.misc}/>
-                    ))}
+                    )) : null}
                 </div>
 
                 <div className="col-span-1">
                     <h2 className="text-3xl font-medium mb-2 text-gray-300">Todo</h2>
-                    {todoTasks.length && todoTasks.map((task) => (
+                    {todoTasks.length > 0 ? todoTasks.map((task) => (
                         <motion.div
                             key={task.id}
                             initial={{ opacity: 0, x: 20 }}
@@ -133,7 +133,7 @@ export default function HomePage() {
                             </div>
                             <p className={`${getTagColor(task.priority)} text-xs font-light px-2.5 py-0.5 rounded-full`}>{task.priority}</p>
                         </motion.div>
-                    ))}
+                    )): null}
                 </div>
             </div>
         </div>
