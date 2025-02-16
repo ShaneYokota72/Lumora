@@ -286,6 +286,39 @@ const tools = {
         required: ["project", "events"]
       }
     }
+  },
+  research: {
+    type: "function",
+    function: {
+      name: "create_research",
+      description: "Research a topic when there's a request to learn more or look into something",
+      parameters: {
+        type: "object",
+        properties: {
+          topic: {
+            type: "string",
+            description: "Main topic to research"
+          },
+          context: {
+            type: "string",
+            description: "Additional context or specific aspects to focus on"
+          },
+          depth: {
+            type: "string",
+            enum: ["basic", "detailed", "comprehensive"],
+            description: "How deep the research should go",
+            default: "detailed"
+          },
+          keywords: {
+            type: "array",
+            items: { type: "string" },
+            description: "Key terms or concepts to include in research",
+            optional: true
+          }
+        },
+        required: ["topic", "context"]
+      }
+    }
   }
 };
 
@@ -349,7 +382,21 @@ For each event, identify:
 - Type (milestone, deadline, meeting, release, review)
 - Dependencies on other events
 Sort events chronologically and track the total duration.
-Do NOT create timelines for single events or general discussions.`
+Do NOT create timelines for single events or general discussions.`,
+
+  research: `You are a research assistant. Create research tasks when:
+- Someone explicitly asks to research or look into something
+- There's a need to gather more information on a topic
+- Someone wants to learn more about a specific subject
+Extract:
+- The main topic to research
+- Relevant context and focus areas
+- Key terms and concepts
+- Desired depth of research
+Do NOT create research tasks for:
+- General statements or observations
+- Already well-understood topics
+- Vague or ambiguous requests`
 };
 
 const validatorFunctions = {
@@ -398,6 +445,13 @@ interface TimelineArgs {
   project: string;
   events: Event[];
   duration?: string;
+}
+
+interface ResearchArgs {
+  topic: string;
+  context: string;
+  depth?: string;
+  keywords?: string[];
 }
 
 const validators = {
@@ -453,6 +507,16 @@ const validators = {
       { check: () => validatorFunctions.isArray(args.events), field: 'events' },
       { check: () => args.events.every(event => validateEvent(event)), field: 'events' },
       { check: () => !args.duration || validatorFunctions.isString(args.duration), field: 'duration' }
+    ];
+    return validateChecks(checks);
+  },
+
+  research: (args: ResearchArgs) => {
+    const checks = [
+      { check: () => validatorFunctions.isString(args.topic), field: 'topic' },
+      { check: () => validatorFunctions.isString(args.context), field: 'context' },
+      { check: () => !args.depth || ['basic', 'detailed', 'comprehensive'].includes(args.depth), field: 'depth' },
+      { check: () => validatorFunctions.isOptionalArray(args.keywords), field: 'keywords' }
     ];
     return validateChecks(checks);
   }
@@ -823,7 +887,139 @@ async function createTimeline(params: TimelineArgs) {
   };
 }
 
-type Route =  "meeting" | "todo" | "quiz" | "flashcards" | "twitter" |"timeline" 
+// the actual research function
+async function createResearch(params: ResearchArgs) {
+  const titleResponse = await groq.chat.completions.create({
+    model: TOOL_USE_MODEL,
+    messages: [{
+      role: "system",
+      content: "Create a title for the research task."
+    }, {
+      role: "user",
+      content: `Topic: ${params.topic}\nContext: ${params.context}`
+    }],
+    tools: [{
+      type: "function",
+      function: {
+        name: "create_research_title",
+        description: "Create research task title",
+        parameters: {
+          type: "object",
+          properties: {
+            title: { type: "string", description: "Title describing research task" }
+          },
+          required: ["title"]
+        }
+      }
+    }],
+    tool_choice: { type: "function", function: { name: "create_research_title" } }
+  });
+
+  // perplexity api call here
+  // TODO ADD API CALL
+  const perplexityResponse = await searchPerplexity(params.topic, params.context, params.keywords);
+
+  const summaryResponse = await groq.chat.completions.create({
+    model: TOOL_USE_MODEL,
+    messages: [{
+      role: "system",
+      content: "Create a summary of the research findings according to the user's context."
+    }, {
+      role: "user",
+      content: `Research Results: ${JSON.stringify(perplexityResponse)}. User Context: ${params.context}`
+    }],
+    tools: [{
+      type: "function",
+      function: {
+        name: "create_research_summary",
+        description: "Create research summary",
+        parameters: {
+          type: "object",
+          properties: {
+            summary: { type: "string", description: "Summary of research findings" },
+            keyFindings: { type: "array", items: { type: "string" }, description: "Key findings from research" }
+          },
+          required: ["summary", "keyFindings"]
+        }
+      }
+    }],
+    tool_choice: { type: "function", function: { name: "create_research_summary" } }
+  });
+
+  const title = JSON.parse(titleResponse.choices[0].message.tool_calls[0].function.arguments).title;
+  const { summary, keyFindings } = JSON.parse(summaryResponse.choices[0].message.tool_calls[0].function.arguments);
+
+  return {
+    status: "created",
+    title,
+    summary,
+    keyFindings,
+    sources: perplexityResponse.sources
+  };
+}
+
+// TODO add actual API call
+async function searchPerplexity(topic: string, context: string, keywords?: string[]) {
+  const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
+  
+  // Construct research prompt
+  let prompt = `Research the following topic: ${topic}\n`;
+  prompt += `Context: ${context}\n`;
+  if (keywords && keywords.length > 0) {
+    prompt += `Key areas to focus on: ${keywords.join(', ')}`;
+  }
+
+  try {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'sonar-pro',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a research assistant. Provide detailed, accurate information with sources.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Perplexity API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Extract citations from response
+    const sources = data.citations ? data.citations.map((url: string) => {
+      return {
+        title: url.split('/').pop() || url, // Use last part of URL as title
+        url: url
+      };
+    }) : [];
+
+    return {
+      results: data.choices[0].message.content,
+      sources: sources
+    };
+  } catch (error) {
+    console.error('Perplexity API error:', error);
+    return {
+      results: "Error fetching research results",
+      sources: []
+    };
+  }
+}
+
+type Route =  "meeting" | "todo" | "quiz" | "flashcards" | "twitter" |"timeline" | "research"
 async function retryToolCall(route: Route, prompt: string, maxRetries = 2) {
   let attempt = 0;
   let lastError = null;
@@ -991,6 +1187,20 @@ export async function processZoomEvent(eventData: EventData) {
             misc: {
               events: args.events,
               duration: args.duration,
+            }
+          };
+
+        case 'create_research':
+          const researchResult = await createResearch(args);
+          return {
+            user_email: eventData.to,
+            title: researchResult.title,
+            desc: researchResult.summary,
+            tag: 'research',
+            misc: {
+              keyFindings: researchResult.keyFindings,
+              sources: researchResult.sources,
+              depth: args.depth || 'detailed'
             }
           };
       }
