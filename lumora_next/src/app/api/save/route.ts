@@ -11,8 +11,9 @@ const supabase = createClient<Database>(
 export async function POST(req: NextRequest) {
     try {
         // Validating request data
-        const body: { user_email?: string; title?: string; desc?: string; tag?: string; misc?: string; task?: string; due_date?: string; priority?: string } = await req.json();
-
+        const body: { user_email?: string; title?: string; desc?: string; tag?: string; misc?: string; task?: string; due_date?: string; priority?: string; action?: string } = await req.json();
+        console.log('body:', body);
+        
         if ('title' in body && 'desc' in body && 'tag' in body && 'misc' in body) {
             const { user_email, title, desc, tag, misc } = body;
             const { data, error } = await supabase
@@ -35,6 +36,8 @@ export async function POST(req: NextRequest) {
             }
 
             console.log('data:', data);
+        } else if('action' in body && body.action === 'no_action_needed'){
+            console.log('No action needed')
         } else {
             throw new Error('Invalid request data');
         }

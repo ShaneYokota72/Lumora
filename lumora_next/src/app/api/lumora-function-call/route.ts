@@ -30,6 +30,19 @@ export async function POST(req: NextRequest) {
 
         const enabledTools: ToolTag[] = ["meeting", "todo", "quiz", "flashcards", "twitter", "timeline"];
         const response = await processZoomEvent(eventData, enabledTools);
+        const dbResponse = await fetch(new URL('/api/save', process.env.NEXT_PUBLIC_BASE_URL).toString(), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(response),
+        });
+
+        if (!dbResponse.ok) {
+            throw new Error('Failed to save to database');
+        }
+        
+        
         console.log('response:', response);
         
 
