@@ -11,8 +11,8 @@ const PORT = 8000;
 app.use(express.json());
 
 // Configuration - Replace with actual values, test values can be found in data/rtms_credentials.json
-const ZOOM_SECRET_TOKEN = 'DyBoLm8OZoJT2Pi3-kY2px'; // Webhook secret for validation 
-const CLIENT_SECRET = 'YZnKVUufg7N18Oej6gHHqNWc7CG5jQ6N'; // Secret key for generating HMAC signatures
+const ZOOM_SECRET_TOKEN = process.env.SECRET_TOKEN; // Webhook secret for validation 
+const CLIENT_SECRET = process.env.CLIENT_SECRET; // Secret key for generating HMAC signatures
 // Track active connections
 const activeConnections = new Map();
 
