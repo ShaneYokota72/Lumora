@@ -11,10 +11,8 @@ const PORT = 8000;
 app.use(express.json());
 
 // Configuration - Replace with actual values, test values can be found in data/rtms_credentials.json
-const ZOOM_SECRET_TOKEN = process.env.SECRET_TOKEN; // Webhook secret for validation 
-const CLIENT_SECRET = process.env.CLIENT_SECRET; // Secret key for generating HMAC signatures
-console.log('ZOOM_SECRET', ZOOM_SECRET_TOKEN)
-console.log('CLIENT_SECRET', CLIENT_SECRET)
+const ZOOM_SECRET_TOKEN = 'DyBoLm8OZoJT2Pi3-kY2px'; // Webhook secret for validation 
+const CLIENT_SECRET = 'YZnKVUufg7N18Oej6gHHqNWc7CG5jQ6N'; // Secret key for generating HMAC signatures
 // Track active connections
 const activeConnections = new Map();
 
@@ -214,6 +212,10 @@ function connectToMediaWebSocket(endpoint, clientId, meetingUuid, streamId) {
                 from: 'shin20040720@gmail.com',
                 to: 'thor.china.shanghai@gmail.com'
             });
+        }
+
+        if(message?.msg_type === "MEDIA_DATA_VIDEO"){
+            console.log('Received Video Data:', message);
         }
     });
 
