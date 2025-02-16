@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.1",
+    "dotenv": "^16.4.7",
     "framer-motion": "^12.4.3",
+    "groq-sdk": "^0.15.0",
+    "ics": "^3.8.1",
     "lucide-react": "^0.475.0",
     "next": "15.1.7",
     "react": "^19.0.0",
@@ -18,9 +21,7 @@
     "react-particles": "^2.12.2",
     "tsparticles": "^3.8.1",
     "tsparticles-engine": "^2.12.0",
-    "tsparticles-slim": "^2.12.0",
-    "dotenv": "^16.4.7",
-    "groq-sdk": "^0.15.0",
+    "tsparticles-slim": "^2.12.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

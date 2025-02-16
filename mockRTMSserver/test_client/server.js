@@ -40,6 +40,8 @@ app.post('/chat', async (req, res) => {
     const { operator, object } = textContent;
     const { contact_email, message } = object;
 
+    console.log('Received chat message:', operator, contact_email, message);
+
     // add content for function call
     await functionCall({ 
         messageType: "CHAT",
@@ -212,10 +214,6 @@ function connectToMediaWebSocket(endpoint, clientId, meetingUuid, streamId) {
                 from: 'shin20040720@gmail.com',
                 to: 'thor.china.shanghai@gmail.com'
             });
-        }
-
-        if(message?.msg_type === "MEDIA_DATA_VIDEO"){
-            console.log('Received Video Data:', message);
         }
     });
 
