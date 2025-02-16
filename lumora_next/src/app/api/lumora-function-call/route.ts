@@ -26,7 +26,10 @@ export async function POST(req: NextRequest) {
             timestamp,
         };
 
-        const response = await processZoomEvent(eventData);
+        type ToolTag = "meeting" | "todo" | "quiz" | "flashcards" | "twitter" | "timeline";
+
+        const enabledTools: ToolTag[] = ["meeting", "todo", "quiz", "flashcards", "twitter", "timeline"];
+        const response = await processZoomEvent(eventData, enabledTools);
         console.log('response:', response);
         
 

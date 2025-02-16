@@ -1108,15 +1108,3 @@ async function routeQuery(eventData: EventData, enabledTools: ToolTag[]) {
 
 // // Run tests
 // testExamples().catch(console.error);
-
-
-// pk | user_email | enum | json | timestamp
-
-
-
-// do the task (schedule, tweet, etc)
-// pk | user_email | title | desc | tag (type of func) | json? (misc) | timestamp
-
-
-// todo
-// pk | user_email | todostuff (string) | deadline | timestamp
