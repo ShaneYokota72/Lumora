@@ -286,6 +286,39 @@ const tools = {
         required: ["project", "events"]
       }
     }
+  },
+  research: {
+    type: "function",
+    function: {
+      name: "create_research",
+      description: "Research a topic when there's a request to learn more or look into something",
+      parameters: {
+        type: "object",
+        properties: {
+          topic: {
+            type: "string",
+            description: "Main topic to research"
+          },
+          context: {
+            type: "string",
+            description: "Additional context or specific aspects to focus on"
+          },
+          depth: {
+            type: "string",
+            enum: ["basic", "detailed", "comprehensive"],
+            description: "How deep the research should go",
+            default: "detailed"
+          },
+          keywords: {
+            type: "array",
+            items: { type: "string" },
+            description: "Key terms or concepts to include in research",
+            optional: true
+          }
+        },
+        required: ["topic", "context"]
+      }
+    }
   }
 };
 
@@ -349,7 +382,21 @@ For each event, identify:
 - Type (milestone, deadline, meeting, release, review)
 - Dependencies on other events
 Sort events chronologically and track the total duration.
-Do NOT create timelines for single events or general discussions.`
+Do NOT create timelines for single events or general discussions.`,
+
+  research: `You are a research assistant. Create research tasks when:
+- Someone explicitly asks to research or look into something
+- There's a need to gather more information on a topic
+- Someone wants to learn more about a specific subject
+Extract:
+- The main topic to research
+- Relevant context and focus areas
+- Key terms and concepts
+- Desired depth of research
+Do NOT create research tasks for:
+- General statements or observations
+- Already well-understood topics
+- Vague or ambiguous requests`
 };
 
 const validatorFunctions = {
@@ -398,6 +445,13 @@ interface TimelineArgs {
   project: string;
   events: Event[];
   duration?: string;
+}
+
+interface ResearchArgs {
+  topic: string;
+  context: string;
+  depth?: string;
+  keywords?: string[];
 }
 
 const validators = {
@@ -453,6 +507,16 @@ const validators = {
       { check: () => validatorFunctions.isArray(args.events), field: 'events' },
       { check: () => args.events.every(event => validateEvent(event)), field: 'events' },
       { check: () => !args.duration || validatorFunctions.isString(args.duration), field: 'duration' }
+    ];
+    return validateChecks(checks);
+  },
+
+  research: (args: ResearchArgs) => {
+    const checks = [
+      { check: () => validatorFunctions.isString(args.topic), field: 'topic' },
+      { check: () => validatorFunctions.isString(args.context), field: 'context' },
+      { check: () => !args.depth || ['basic', 'detailed', 'comprehensive'].includes(args.depth), field: 'depth' },
+      { check: () => validatorFunctions.isOptionalArray(args.keywords), field: 'keywords' }
     ];
     return validateChecks(checks);
   }
@@ -823,7 +887,139 @@ async function createTimeline(params: TimelineArgs) {
   };
 }
 
-type Route =  "meeting" | "todo" | "quiz" | "flashcards" | "twitter" |"timeline" 
+// the actual research function
+async function createResearch(params: ResearchArgs) {
+  const titleResponse = await groq.chat.completions.create({
+    model: TOOL_USE_MODEL,
+    messages: [{
+      role: "system",
+      content: "Create a title for the research task."
+    }, {
+      role: "user",
+      content: `Topic: ${params.topic}\nContext: ${params.context}`
+    }],
+    tools: [{
+      type: "function",
+      function: {
+        name: "create_research_title",
+        description: "Create research task title",
+        parameters: {
+          type: "object",
+          properties: {
+            title: { type: "string", description: "Title describing research task" }
+          },
+          required: ["title"]
+        }
+      }
+    }],
+    tool_choice: { type: "function", function: { name: "create_research_title" } }
+  });
+
+  // perplexity api call here
+  // TODO ADD API CALL
+  const perplexityResponse = await searchPerplexity(params.topic, params.context, params.keywords);
+
+  const summaryResponse = await groq.chat.completions.create({
+    model: TOOL_USE_MODEL,
+    messages: [{
+      role: "system",
+      content: "Create a summary of the research findings according to the user's context."
+    }, {
+      role: "user",
+      content: `Research Results: ${JSON.stringify(perplexityResponse)}. User Context: ${params.context}`
+    }],
+    tools: [{
+      type: "function",
+      function: {
+        name: "create_research_summary",
+        description: "Create research summary",
+        parameters: {
+          type: "object",
+          properties: {
+            summary: { type: "string", description: "Summary of research findings" },
+            keyFindings: { type: "array", items: { type: "string" }, description: "Key findings from research" }
+          },
+          required: ["summary", "keyFindings"]
+        }
+      }
+    }],
+    tool_choice: { type: "function", function: { name: "create_research_summary" } }
+  });
+
+  const title = JSON.parse(titleResponse.choices[0].message.tool_calls[0].function.arguments).title;
+  const { summary, keyFindings } = JSON.parse(summaryResponse.choices[0].message.tool_calls[0].function.arguments);
+
+  return {
+    status: "created",
+    title,
+    summary,
+    keyFindings,
+    sources: perplexityResponse.sources
+  };
+}
+
+// TODO add actual API call
+async function searchPerplexity(topic: string, context: string, keywords?: string[]) {
+  const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
+  
+  // Construct research prompt
+  let prompt = `Research the following topic: ${topic}\n`;
+  prompt += `Context: ${context}\n`;
+  if (keywords && keywords.length > 0) {
+    prompt += `Key areas to focus on: ${keywords.join(', ')}`;
+  }
+
+  try {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'sonar-pro',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a research assistant. Provide detailed, accurate information with sources.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Perplexity API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Extract citations from response
+    const sources = data.citations ? data.citations.map((url: string) => {
+      return {
+        title: url.split('/').pop() || url, // Use last part of URL as title
+        url: url
+      };
+    }) : [];
+
+    return {
+      results: data.choices[0].message.content,
+      sources: sources
+    };
+  } catch (error) {
+    console.error('Perplexity API error:', error);
+    return {
+      results: "Error fetching research results",
+      sources: []
+    };
+  }
+}
+
+type Route =  "meeting" | "todo" | "quiz" | "flashcards" | "twitter" |"timeline" | "research"
 async function retryToolCall(route: Route, prompt: string, maxRetries = 2) {
   let attempt = 0;
   let lastError = null;
@@ -875,40 +1071,11 @@ async function retryToolCall(route: Route, prompt: string, maxRetries = 2) {
   throw new Error(`Failed after ${maxRetries + 1} attempts. Last error: ${lastError}`);
 }
 
-async function routeQuery(eventData: EventData) {
-  const prompt = parseZoomData(eventData);
-  
-  const response = await groq.chat.completions.create({
-    model: ROUTING_MODEL,
-    messages: [{
-      role: "system",
-      content: `Analyze the conversation and determine which tool is needed:
-      - Respond with "TOOL: MEETING" if there's an explicit request to schedule a meeting
-      - Respond with "TOOL: TODO" if there's a task or action item that needs tracking
-- Respond with "TOOL: QUIZ" if there's a request to create a quiz or test
-      - Respond with "TOOL: FLASHCARDS" if there's a request to create flashcards
-      - Respond with "TOOL: TWITTER" if there's a request to create a tweet
-      - Respond with "NO TOOL" if no specific action is needed`
-    }, {
-      role: "user",
-      content: prompt
-    }],
-    max_completion_tokens: 20
-  });
+type ToolTag = "meeting" | "todo" | "quiz" | "flashcards" | "twitter" | "timeline";
 
-  const decision = response.choices[0].message.content.trim();
-  
-  if (decision.includes("TOOL: MEETING")) return "meeting";
-  if (decision.includes("TOOL: TODO")) return "todo";
-  if (decision.includes("TOOL: QUIZ")) return "quiz";
-  if (decision.includes("TOOL: FLASHCARDS")) return "flashcards";
-  if (decision.includes("TOOL: TWITTER")) return "twitter";
-  return "none";
-}
-
-export async function processZoomEvent(eventData: EventData) {
+export async function processZoomEvent(eventData: EventData, enabledTools: ToolTag[]) {
   try {
-    const route = await routeQuery(eventData);
+    const route = await routeQuery(eventData, enabledTools); // Pass enabledTools to routeQuery
     const prompt = parseZoomData(eventData);
 
     if (route === "none") {
@@ -918,9 +1085,18 @@ export async function processZoomEvent(eventData: EventData) {
       };
     }
 
+    // Check if the routed tool is enabled. This should not happen (very unlikely)
+    if (!enabledTools.includes(route as ToolTag)) {
+      return {
+        action: "tool_disabled",
+        summary: `The ${route} tool is not enabled for this user`
+      };
+    }
+
     try {
       const { toolCall, args } = await retryToolCall(route, prompt);
       
+      // this will only happen once the tool call is successful (doesnt matter that we have all tools here)
       switch (toolCall.function.name) {
         case 'schedule_meeting':
           const meetingResult = await scheduleMeeting(args);
@@ -993,6 +1169,20 @@ export async function processZoomEvent(eventData: EventData) {
               duration: args.duration,
             }
           };
+
+        case 'create_research':
+          const researchResult = await createResearch(args);
+          return {
+            user_email: eventData.to,
+            title: researchResult.title,
+            desc: researchResult.summary,
+            tag: 'research',
+            misc: {
+              keyFindings: researchResult.keyFindings,
+              sources: researchResult.sources,
+              depth: args.depth || 'detailed'
+            }
+          };
       }
     } catch (error) {
       return {
@@ -1010,6 +1200,45 @@ export async function processZoomEvent(eventData: EventData) {
       error: "Failed to process request: " + (error as Error).message
     };
   }
+}
+
+// modified routeQuery to accept enabledTools
+async function routeQuery(eventData: EventData, enabledTools: ToolTag[]) {
+  const prompt = parseZoomData(eventData);
+  
+  // use enabledTools to create system prompt that only includes enabled tools. Essentially tools are therefore disabled for the model.
+
+  const enabledToolsPrompt = `Analyze the conversation and determine which tool is needed:
+  ${enabledTools.includes("meeting") ? '- Respond with "TOOL: MEETING" if there\'s an explicit request to schedule a meeting' : ''}
+  ${enabledTools.includes("todo") ? '- Respond with "TOOL: TODO" if there\'s a task or action item that needs tracking' : ''}
+  ${enabledTools.includes("quiz") ? '- Respond with "TOOL: QUIZ" if there\'s a request to create a quiz or test' : ''}
+  ${enabledTools.includes("flashcards") ? '- Respond with "TOOL: FLASHCARDS" if there\'s a request to create flashcards' : ''}
+  ${enabledTools.includes("twitter") ? '- Respond with "TOOL: TWITTER" if there\'s a request to create a tweet' : ''}
+  ${enabledTools.includes("timeline") ? '- Respond with "TOOL: TIMELINE" if there\'s a request to create a timeline' : ''}
+  - Respond with "NO TOOL" if no specific action is needed or if the required tool is not enabled`;
+
+  const response = await groq.chat.completions.create({
+    model: ROUTING_MODEL,
+    messages: [{
+      role: "system",
+      content: enabledToolsPrompt
+    }, {
+      role: "user",
+      content: prompt
+    }],
+    max_completion_tokens: 20
+  });
+
+  const decision = response.choices[0].message.content.trim();
+  
+  // double check if the tool is enabled
+  if (decision.includes("TOOL: MEETING") && enabledTools.includes("meeting")) return "meeting";
+  if (decision.includes("TOOL: TODO") && enabledTools.includes("todo")) return "todo";
+  if (decision.includes("TOOL: QUIZ") && enabledTools.includes("quiz")) return "quiz";
+  if (decision.includes("TOOL: FLASHCARDS") && enabledTools.includes("flashcards")) return "flashcards";
+  if (decision.includes("TOOL: TWITTER") && enabledTools.includes("twitter")) return "twitter";
+  if (decision.includes("TOOL: TIMELINE") && enabledTools.includes("timeline")) return "timeline";
+  return "none";
 }
 
 // Test all examples
@@ -1089,15 +1318,3 @@ export async function processZoomEvent(eventData: EventData) {
 
 // // Run tests
 // testExamples().catch(console.error);
-
-
-// pk | user_email | enum | json | timestamp
-
-
-
-// do the task (schedule, tweet, etc)
-// pk | user_email | title | desc | tag (type of func) | json? (misc) | timestamp
-
-
-// todo
-// pk | user_email | todostuff (string) | deadline | timestamp

@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processZoomEvent } from '../../../utils/Agent/GroqFunctionCall';
-import { EventData } from '../../../utils/Agent/types';
+import { EventData, ToolTag } from '../../../utils/Agent/types';
+import { createClient } from '@supabase/supabase-js';
+import { Database } from '../../../../database.types';
+
+// Create a single supabase client for interacting with your database
+const supabase = createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_LINK!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export async function POST(req: NextRequest) {
     try {
@@ -8,10 +16,13 @@ export async function POST(req: NextRequest) {
         const { 
             messageType, 
             data,
-            from,
-            to,
+            // from,
+            // to,
             timestamp,
         } = await req.json();
+        const from = 'shin20040720@gmail.com'
+        const to = 'thor.china.shanghai@gmail.com'
+
         console.log('messageType:', messageType);
         console.log('data:', data);
         console.log('from:', from);
@@ -26,11 +37,31 @@ export async function POST(req: NextRequest) {
             timestamp,
         };
 
-        // agent option via user id 
-        // comma separated list or list of string
+        const {data: agent_options, error} = await supabase
+            .from('User')
+            .select('agent_options')
+            .eq('email', from)
 
-        const response = await processZoomEvent(eventData);
-        // console.log('response:', response);
+        if(agent_options === null || agent_options.length === 0) {
+            return NextResponse.json({ success: true, message: 'No agent options found' });
+        }
+
+        const {data: agent_options_supa, error: agentOptionsError} = await supabase
+            .from('Agent')
+            .select('agent_task')
+            .in('id', agent_options[0].agent_options ?? []);
+        if(agent_options_supa === null || agent_options_supa.length === 0) {
+            return NextResponse.json({ success: true, message: 'No agent options found' });
+        }
+
+        const enabledTools = agent_options_supa?.map((agentOption) => agentOption.agent_task) ?? [];
+        console.log('enabledTools:', enabledTools);
+
+        const response = await processZoomEvent(eventData, enabledTools as ToolTag[]);
+        console.log('response:', response);
+        if (response) {
+            response.user_email = from;
+        }
         const dbResponse = await fetch(new URL('/api/save', process.env.NEXT_PUBLIC_BASE_URL).toString(), {
             method: 'POST',
             headers: {
@@ -42,7 +73,7 @@ export async function POST(req: NextRequest) {
         if (!dbResponse.ok) {
             throw new Error('Failed to save to database');
         }
-        
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.log('error:', error);

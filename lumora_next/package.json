@@ -11,7 +11,9 @@
   "dependencies": {
     "@radix-ui/react-scroll-area": "^1.2.3",
     "@supabase/supabase-js": "^2.48.1",
+
     "class-variance-authority": "^0.7.1",
+    
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",
     "framer-motion": "^12.4.3",
