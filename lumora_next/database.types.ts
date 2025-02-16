@@ -34,6 +34,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      Agent: {
+        Row: {
+          agent_description: string | null
+          agent_display_name: string | null
+          agent_task: string | null
+          created_at: string
+          id: number
+        }
+        Insert: {
+          agent_description?: string | null
+          agent_display_name?: string | null
+          agent_task?: string | null
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          agent_description?: string | null
+          agent_display_name?: string | null
+          agent_task?: string | null
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
       Task: {
         Row: {
           created_at: string
@@ -96,6 +120,7 @@ export type Database = {
       }
       User: {
         Row: {
+          agent_options: number[] | null
           created_at: string
           display_name: string | null
           email: string | null
@@ -103,6 +128,7 @@ export type Database = {
           password: string | null
         }
         Insert: {
+          agent_options?: number[] | null
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -110,6 +136,7 @@ export type Database = {
           password?: string | null
         }
         Update: {
+          agent_options?: number[] | null
           created_at?: string
           display_name?: string | null
           email?: string | null
