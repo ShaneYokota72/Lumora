@@ -925,7 +925,7 @@ export async function processZoomEvent(eventData: EventData) {
         case 'schedule_meeting':
           const meetingResult = await scheduleMeeting(args);
             return {
-              user_email: eventData.from,
+              user_email: eventData.messageType === 'CHAT' ? eventData.to : eventData.from,
               title: args.title,
               desc: meetingResult.desc,
               tag: 'meeting',
