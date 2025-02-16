@@ -2,7 +2,10 @@ import { motion } from 'framer-motion'
 import React from 'react'
 import type { Task } from '../app/home/page'
 import { createEvent } from 'ics'
-import { Calendar, Twitter } from 'lucide-react'
+import { BookCheck, Calendar, Flashlight, Twitter } from 'lucide-react'
+import { usePopup } from '@/hooks/usePopup'
+import Flashcards from './Flashcards'
+import Quiz from './Quiz'
 
 export default function Task({
     id,
@@ -11,6 +14,7 @@ export default function Task({
     tag,
     misc,
 }: Task) {
+    const { setPopupContent } = usePopup()
     const downloadCalendarInvite = (title: string, description: string) => {    
         const event = {
             // TODO: fix once thor fixes format
@@ -73,12 +77,12 @@ export default function Task({
             >
                 {tag}
             </span>
-            <h3 className="text-xl font-light mb-2 text-gray-200">{title}</h3>
+            <h3 className="text-xl font-light mb-2 text-gray-200 w-4/5">{title}</h3>
             <p className="text-sm text-gray-400 mt-2">{desc}</p>
             {
                 tag === "meeting" && (
                     <div 
-                        className="flex w-fit items-center mt-4 border border-gray-700 p-2 rounded-lg hover:cursor-pointer"
+                        className="flex w-fit items-center mt-4 border border-gray-700 p-2 rounded-lg hover:cursor-pointer hover:border-purple-700"
                         onClick={() => downloadCalendarInvite(title, desc)}
                     >
                         <Calendar className="w-5 h-5 mr-2" />
@@ -89,7 +93,7 @@ export default function Task({
             {
                 tag === "twitter" && (
                     <div 
-                        className="flex w-fit items-center mt-4 border border-gray-700 p-2 rounded-lg hover:cursor-pointer"
+                        className="flex w-fit items-center mt-4 border border-gray-700 p-2 rounded-lg hover:cursor-pointer hover:border-purple-700"
                         onClick={() => window.open(`https://twitter.com/intent/tweet?text=${misc.tweet}`)}
                     >
                         <Twitter className="w-5 h-5 mr-2" />
@@ -100,19 +104,21 @@ export default function Task({
             {
                 tag === "flashcards" && (
                     <div 
-                        className="flex w-fit items-center mt-4 border border-gray-700 p-2 rounded-lg hover:cursor-pointer"
-                        onClick={() => window.open("https://quizlet.com")}
+                        className="flex w-fit items-center mt-4 border border-gray-700 p-2 rounded-lg hover:cursor-pointer hover:border-purple-700"
+                        onClick={() => setPopupContent(<Flashcards flashcardList={misc.flashcardList} />)}
                     >
-                        <p className="text-xs text-gray-400">Open Lumora Flashboard</p>
+                        <Flashlight className="w-5 h-5 mr-2"/>
+                        <p className="text-xs text-gray-400">Open Lumora Flashcards</p>
                     </div>
                 )
             }
             {
                 tag === "quiz" && (
                     <div 
-                        className="flex w-fit items-center mt-4 border border-gray-700 p-2 rounded-lg hover:cursor-pointer"
-                        onClick={() => {}}
+                        className="flex w-fit items-center mt-4 border border-gray-700 p-2 rounded-lg hover:cursor-pointer hover:border-purple-700"
+                        onClick={() => setPopupContent(<Quiz quiz={misc.quiz} />)}
                     >
+                        <BookCheck className="w-5 h-5 mr-2"/>
                         <p className="text-xs text-gray-400">Open Lumora Quiz</p>
                     </div>
                 )

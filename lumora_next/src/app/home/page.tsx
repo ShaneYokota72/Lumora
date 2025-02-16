@@ -18,6 +18,7 @@ interface Todo {
     id: number
     task: string
     completed: boolean
+    priority: "high" | "medium" | "low"
 }
 
 export default function HomePage() {
@@ -48,6 +49,20 @@ export default function HomePage() {
             })
         })
         return res.ok
+    }
+
+    const getTagColor = (tag: string) => {
+        switch (tag.toLowerCase()) {
+            
+        case "high":
+            return "bg-red-900 text-red-200 border border-red-500 rounded-lg px-2 py-1"
+        case "medium":
+            return "bg-yellow-900 text-yellow-200 border border-yellow-400 rounded-lg px-2 py-1"
+        case "low":
+            return "bg-green-900 text-green-200 border border-green-500 rounded-lg px-2 py-1"
+        default:
+            return "bg-gray-900 text-gray-200 border border-gray-700 rounded-lg px-2 py-1"
+        }
     }
     
     return (
@@ -88,7 +103,7 @@ export default function HomePage() {
                             key={task.id}
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="w-full flex items-center bg-gray-800 p-4 rounded-lg shadow-lg mb-4 accent-border"
+                            className="w-full flex items-center gap-2 justify-between bg-gray-800 p-4 rounded-lg shadow-lg mb-4 accent-border"
                             onClick={async () => {
                                 setTodoTasks((prevTasks) =>
                                     prevTasks.map((prevTask) => prevTask.id === task.id
@@ -106,14 +121,17 @@ export default function HomePage() {
                                 }
                             }}
                         >
-                            {task.completed ? (
-                                <CheckCircle className="text-green-500 mr-2 flex-shrink-0" />
-                            ) : (
-                                <Circle className="text-gray-500 mr-2 flex-shrink-0" />
-                            )}
-                            <span className={`${task.completed ? "line-through text-gray-500" : "text-gray-200"} font-light`}>
-                                {task.task}
-                            </span>
+                            <div className="flex gap-2 items-center">
+                                {task.completed ? (
+                                    <CheckCircle className="text-green-500 mr-2 flex-shrink-0" />
+                                ) : (
+                                    <Circle className="text-gray-500 mr-2 flex-shrink-0" />
+                                )}
+                                <span className={`${task.completed ? "line-through text-gray-500" : "text-gray-200"} font-light`}>
+                                    {task.task}
+                                </span>
+                            </div>
+                            <p className={`${getTagColor(task.priority)} text-xs font-light px-2.5 py-0.5 rounded-full`}>{task.priority}</p>
                         </motion.div>
                     ))}
                 </div>
