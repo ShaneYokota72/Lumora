@@ -1,6 +1,6 @@
 type MediaType = "TRANSCRIPT" | "CHAT"
 
-export type ToolTag = "meeting" | "todo" | "quiz" | "flashcards" | "twitter" | "timeline";
+export type ToolTag = "meeting" | "todo" | "quiz" | "flashcards" | "twitter" | "timeline" | "research";
 
 export interface EventData{
     messageType: MediaType 

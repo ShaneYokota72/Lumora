@@ -1,5 +1,4 @@
-import { title } from "process";
-import { EventData } from "./types";
+import { EventData, ToolTag } from "./types";
 
 require('dotenv').config();
 const { Groq } = require('groq-sdk');
@@ -1071,8 +1070,6 @@ async function retryToolCall(route: Route, prompt: string, maxRetries = 2) {
   throw new Error(`Failed after ${maxRetries + 1} attempts. Last error: ${lastError}`);
 }
 
-type ToolTag = "meeting" | "todo" | "quiz" | "flashcards" | "twitter" | "timeline";
-
 export async function processZoomEvent(eventData: EventData, enabledTools: ToolTag[]) {
   try {
     const route = await routeQuery(eventData, enabledTools); // Pass enabledTools to routeQuery
@@ -1215,6 +1212,7 @@ async function routeQuery(eventData: EventData, enabledTools: ToolTag[]) {
   ${enabledTools.includes("flashcards") ? '- Respond with "TOOL: FLASHCARDS" if there\'s a request to create flashcards' : ''}
   ${enabledTools.includes("twitter") ? '- Respond with "TOOL: TWITTER" if there\'s a request to create a tweet' : ''}
   ${enabledTools.includes("timeline") ? '- Respond with "TOOL: TIMELINE" if there\'s a request to create a timeline' : ''}
+  ${enabledTools.includes("research") ? '- Respond with "TOOL: RESEARCH" if there\'s a request to research or investigate a topic' : ''}
   - Respond with "NO TOOL" if no specific action is needed or if the required tool is not enabled`;
 
   const response = await groq.chat.completions.create({
@@ -1238,6 +1236,7 @@ async function routeQuery(eventData: EventData, enabledTools: ToolTag[]) {
   if (decision.includes("TOOL: FLASHCARDS") && enabledTools.includes("flashcards")) return "flashcards";
   if (decision.includes("TOOL: TWITTER") && enabledTools.includes("twitter")) return "twitter";
   if (decision.includes("TOOL: TIMELINE") && enabledTools.includes("timeline")) return "timeline";
+  if (decision.includes("TOOL: RESEARCH") && enabledTools.includes("research")) return "research";
   return "none";
 }
 

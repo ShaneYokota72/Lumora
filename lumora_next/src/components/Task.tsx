@@ -2,11 +2,9 @@ import { motion } from 'framer-motion'
 import React from 'react'
 import type { Task } from '../app/home/page'
 import { createEvent } from 'ics'
-
-import { Calendar, Search, Twitter } from 'lucide-react'
 import { SourcesList } from './sourcesList'
 
-import { BookCheck, Calendar, Flashlight, Twitter } from 'lucide-react'
+import { BookCheck, Calendar, Flashlight, Twitter, Search } from 'lucide-react'
 import { usePopup } from '@/hooks/usePopup'
 import Flashcards from './Flashcards'
 import Quiz from './Quiz'
@@ -131,7 +129,7 @@ export default function Task({
                 )
             }
             {
-                tag === "research" && misc.researchResults && (
+                tag === "research" && (
                     <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
@@ -142,8 +140,11 @@ export default function Task({
                         <Search className="w-5 h-5 mr-2 text-indigo-400" />
                         <h4 className="text-lg font-medium text-gray-300">Research Results</h4>
                     </div>
-                    <p className="text-sm text-gray-400 mb-4">{misc.researchResults.summary}</p>
-                    <SourcesList sources={misc.researchResults.sources} />
+                    <p className="text-sm text-gray-400 mb-4">{misc.summary}</p>
+                    <SourcesList sources={misc.sources} />
+                    {
+                        !misc.sources.length && (<p className='text-sm text-slate-300'>No Sources</p>)
+                    }
                     </motion.div>
                 )
             }

@@ -37,7 +37,7 @@ export function SourcesList({ sources }: SourcesListProps) {
   }
 
   return (
-    <ScrollArea className="w-full whitespace-nowrap rounded-lg bg-gray-800/50 p-2">
+    <ScrollArea className="w-full whitespace-nowrap rounded-lg bg-gray-800/50">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex w-max space-x-2">
         {sources.map((source, index) => {
           const faviconUrl = getFaviconUrl(source.url)
@@ -55,7 +55,7 @@ export function SourcesList({ sources }: SourcesListProps) {
                 scale: 1,
                 transition: { delay: index * 0.1 },
               }}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.02 }}
               className={cn(
                 "inline-flex items-center gap-2 rounded-lg border border-gray-700",
                 "bg-gray-800 px-3 py-2 text-sm text-gray-300",
