@@ -1,94 +1,58 @@
-# Lumora 🚀  
-**Your AI-Powered Collaboration Hub**  
+# Lumora 🚀
+**Your AI-Powered Collaboration Hub**
 
----
+## ✨ **What is Lumora?**
+Lumora is a Personal Assistant Marketplace that transforms your Zoom meetings and chats into actionable workflows. By integrating with Zoom's powerful APIs, Lumora orchestrates intelligent workflows to automate tasks, boost productivity, and enhance collaboration—whether you're in education, enterprise, or beyond.
 
-## 🌟 **What is Lumora?**  
-Lumora is a **Personal Assistant Marketplace** that transforms your zoom meetings and chats into actionable workflows. By integrating Zoom APIs and leveraging LLMs, Lumora orchestrates intelligent agents to automate tasks, boost productivity, and enhance collaboration—whether you're in education, enterprise, or beyond. 
+## 💡 **Why the Name Lumora?**
+Lumora represents illuminating collaboration—bringing clarity and energy to your workflows.
 
----
+## 🎯 **What Inspired Us**
+In our day-to-day lives, we constantly encounter small tasks that add up to consume significant time—scheduling meetings, creating study materials, or researching topics. When these tasks accumulate, they can overwhelm our productivity. Lumora was born from the vision to automate these routine tasks, allowing people to focus on what truly matters.
 
-## 🎯 **Why the Name Lumora?**  
-- **Lumora** blends *"lumen"* (light, clarity) and *"aura"* (presence, atmosphere).  
-- It represents **illuminating collaboration**—bringing clarity and energy to your workflows.  
+## 🚀 **What We Built**
+Within 36 hours of hacking, we created a powerful collaboration hub featuring:
 
----
+### **The Lumora Library**
+We've built 7 specialized tools across education, productivity, and social media:
+- **Education Suite**: Quiz Generator, Flashcard Creator, Research Assistant
+- **Productivity Tools**: Meeting Scheduler, Todo List Manager, Timeline Manager
+- **Social Media**: Tweet Drafter
 
-## 🛠️ **Features**  
+### **Key Features**
+- **Comprehensive Zoom Integration**: 
+  - Processes both meeting transcripts and chat messages in real-time
+  - Automatically triggers relevant workflows based on conversation context
+  - Works seamlessly with the world's leading meeting platform
+- **Dynamic Marketplace**: 
+  - Modular architecture enables unlimited tool creation
+  - Future potential for thousands of community-created tools
+  - Future plans to share and discover tools built by other users
+- **Customizable Workspace**: 
+  - Select and activate only the tools you need
+  - Mix and match tools for your specific workflow
+  - Easily add new tools as your needs evolve
+- **Interactive Dashboard**: Track completed tasks and take instant actions:
+  - Schedule meetings with one click
+  - View generated quizzes
+  - Access research findings with useful source links
+  - Post tweets directly to Twitter/X
 
-### **Core Workflow**  
-1. **Zoom API Integration**  
-   - Retrieve meeting transcripts and chat logs.  
-   - Send data to the **Orchestrator LLM** to decide if a function should be called.  
+## 🔮 **What's Next**
+- **Live AI Tutor/Assistand**: Video and voice comes together to help users when they're stuck! Screensharing included!
+- **No-Code Tool Creator**: Enabling users to build custom workflow tools
+- **Expanded Library**: Adding more specialized tools for different industries
+- **Enhanced Integrations**: Supporting more platforms beyond Zoom
 
-2. **AI Agents**  
-   - **Schedule Meetings**: Calendar integration for seamless scheduling.  
-   - **Todo List Manager**: Add tasks to your frontend todo list.  
-   - **Research Assistant**: Use Perplexity to find documents or answers.  
-   - **Tweet Generator**: Automatically draft marketing tweets.
-   - And more...
-
-3. **Education-Specific Agents**  
-   - **Interactive Quiz Generator**: Turn discussions into quizzes.  
-   - **Flashcard Generator**: Create flashcards for key points.  
-   - **Group Work Mediator**: Break down team projects into tasks.  
-
----
-
-## 🖥️ **Frontend**  
-- **Task Dashboard**: View completed tasks and pending todos.
-- **Marketplace**: Browse and deploy AI agents for your needs.
-- **Chatbot (Coming soon)**: Interact with agents via a conversational interface.
-- **No-Code Agent Creator (Coming soon)**: Build custom agents without coding.  
-
----
-
-## 🚀 **Timeline**  
-
-### **Phase 1: Zoom API Integration**  
-- Retrieve meeting transcripts and chat logs.  
-- Send data to the Orchestrator LLM for decision-making.  
-
-### **Phase 2: AI Agents**  
-- **Schedule Meetings**: Calendar integration.  
-- **Todo List Manager**: Add tasks to frontend.  
-- **Research Assistant**: Find documents or answers.  
-- **Tweet Generator**: Draft marketing tweets.  
-
-### **Phase 3: Education Agents**  
-- **Quiz Generator**: Create interactive quizzes.  
-- **Flashcard Generator**: Generate flashcards.  
-- **Group Work Mediator**: Manage team projects.  
-
-### **Phase 4: Frontend & Marketplace**  
-- Build a **Task Dashboard** for tracking.  
-- Launch the **Marketplace** for agent discovery.  
-- Add a **Chatbot** for conversational interaction.  
-- Develop a **No-Code Agent Creator** for custom workflows.  
-
----
-
-## 🛠️ **Tech Stack**  
-- **APIs**: Zoom API, Calendar APIs.  
-- **LLM**: Groq for Orchestrator, Perplexity for research.  
+## 🛠️ **Tech Stack**
+- **APIs**: Zoom API, Groq API, Perplexity APIs, Calendar API
+- **LLM**: Groq for orchestration, function calling, and lightning speed inference. Perplexity for deep up-to-date research
 - **Frontend**: Next.js, Tailwind CSS
-- **Backend**: Node.js  
-- **Database**: Supabase.  
+- **Backend**: Node.js
+- **Database**: Supabase
+
+## 📜 **License**
+Lumora is open-source under the **MIT License**.
 
 ---
-
-## 🌈 **Why Lumora?**  
-- **Automate Repetitive Tasks**: Focus on what matters while Lumora handles the rest.
-- **Get Ahead of the Curve**: Let Lumora start on tasks in the background so you have what you need to get started.
-- **Customizable Agents**: Build agents tailored to your needs, completely customizable!  
-- **Seamless Integration**: Works with Zoom, calendars, all on the dashboard.  
-- **Education & Enterprise Ready**: Perfect for classrooms, teams, and beyond.  
-
----
-
-## 📜 **License**  
-Lumora is open-source under the **MIT License**.  
-
----
-
-Made with ❤️ by the Lumora Team. Let’s illuminate collaboration together! ✨  
+Made with ❤️ by the Lumora Team | Revolutionizing the way we work, one task at a time ✨
